@@ -1,3 +1,6 @@
+using Meta.XR.ImmersiveDebugger;
+using Models;
+using Newtonsoft.Json;
 using Roboflow;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -41,9 +44,32 @@ public class DetectionManager : MonoBehaviour
         tooltip.text = "Detecting...";
     }
 
+    [DebugMember]
     private void OnDetectionSuccess(string result)
     {
         m_isLoading = false;
+        
+        var response = JsonConvert.DeserializeObject<RootResponse>(result);
+        if (response?.Outputs == null || response.Outputs.Count == 0)
+        {
+            tooltip.text = "No detections found. Press button to detect again.";
+            return;
+        }
+
+        var detection = response.Outputs[0];
+        var predictions = detection.RawRecognition?.Predictions;
+
+        if (predictions == null || predictions.Count == 0)
+        {
+            tooltip.text = "No drums detected. Press button to detect again.";
+            return;
+        }
+
+        foreach (var prediction in predictions)
+        {
+            Debug.Log($"Detected {prediction.Class} at ({prediction.X}, {prediction.Y})");
+        }
+
         tooltip.text = "Detection complete. Press button to detect again.";
     }
 

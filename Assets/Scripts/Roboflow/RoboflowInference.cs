@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Text;
 using Meta.XR.ImmersiveDebugger;
+using Newtonsoft.Json;
 using PassthroughCameraSamples;
 using UnityEngine;
 using UnityEngine.Events;
@@ -74,7 +75,7 @@ namespace Roboflow
 
         private UnityWebRequest BuildRequest(string imageBase64) 
         {
-            var payload = JsonUtility.ToJson(new Payload(apiKey, imageBase64));
+            var payload = JsonConvert.SerializeObject(new Payload(apiKey, imageBase64));
             var request = new UnityWebRequest(GetUrl(), "POST");
             var bodyRaw = Encoding.UTF8.GetBytes(payload);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);

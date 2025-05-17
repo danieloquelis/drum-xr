@@ -23,6 +23,7 @@ MonoBehaviour:
     - Meta.XR.MultiplayerBlocks.Shared.FriendsMatchmaking
   - AssemblyName: Assembly-CSharp
     DebugTypes:
+    - DetectionManager
     - Roboflow.RoboflowInference
   immersiveDebuggerEnabled: 1
   immersiveDebuggerDisplayAtStartup: 0
