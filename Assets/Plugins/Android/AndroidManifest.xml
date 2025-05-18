@@ -23,4 +23,6 @@
   <uses-permission android:name="com.oculus.permission.USE_SCENE" />
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="horizonos.permission.HEADSET_CAMERA" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="horizonos.permission.RECORD_AUDIO" />
 </manifest>
