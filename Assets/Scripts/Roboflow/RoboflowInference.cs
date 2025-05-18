@@ -18,7 +18,7 @@ namespace Roboflow
             HttpError
         }
     
-        [Header("Dependencies")] 
+        [Header("PCA")] 
         [SerializeField] private WebCamTextureManager webCamTextureManager;
     
         [Header("Roboflow Settings")]

@@ -1,23 +1,33 @@
+using Meta.XR;
 using Meta.XR.ImmersiveDebugger;
 using Models;
 using Newtonsoft.Json;
+using PassthroughCameraSamples;
 using Roboflow;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public class DetectionManager : MonoBehaviour
 {
+    [Header("PCA")] 
+    [SerializeField] private WebCamTextureManager webCamTextureManager;
+    
     [Header("Roboflow")]
     [SerializeField] private RoboflowInference roboflowInference;
     
-    [Header("Controls configuration")]
+    [Header("Controls Configuration")]
     [SerializeField] private OVRInput.RawButton actionButton = OVRInput.RawButton.A;
 
+    [Header("Placement")]
+    [SerializeField] private EnvironmentRaycastManager environmentRaycastManager;
+    [SerializeField] private DetectionMarkerSpawner detectionMarkerSpawner;
+    
     [Header("UI")] 
     [SerializeField] private TextMesh tooltip;
     
     private bool m_isLoading;
-    
+    private PassthroughCameraEye Eye => webCamTextureManager.Eye;
+
     private void Start()
     {
         Assert.IsNotNull(roboflowInference, "RoboflowInference prefab is not set");
@@ -65,10 +75,25 @@ public class DetectionManager : MonoBehaviour
             return;
         }
 
+        var imageWidth = detection.RawRecognition.Image.Width;
+        var imageHeight = detection.RawRecognition.Image.Height;
+        var camRes = PassthroughCameraUtils.GetCameraIntrinsics(Eye).Resolution;
+
         foreach (var prediction in predictions)
         {
             Debug.Log($"Detected {prediction.Class} at ({prediction.X}, {prediction.Y})");
+
+            var px = Mathf.RoundToInt(prediction.X / imageWidth * camRes.x);
+            var py = Mathf.RoundToInt((1f - prediction.Y / imageHeight) * camRes.y);
+
+            var ray = PassthroughCameraUtils.ScreenPointToRayInWorld(Eye, new Vector2Int(px, py));
+
+            if (environmentRaycastManager.Raycast(ray, out var hit))
+            {
+                detectionMarkerSpawner.SpawnAnchor(hit.point, prediction.Class);
+            }
         }
+
 
         tooltip.text = "Detection complete. Press button to detect again.";
     }

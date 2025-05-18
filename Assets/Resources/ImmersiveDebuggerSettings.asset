@@ -24,6 +24,8 @@ MonoBehaviour:
   - AssemblyName: Assembly-CSharp
     DebugTypes:
     - DetectionManager
+    - DetectionMarkerSpawner
+    - MarkerAnchor
     - Roboflow.RoboflowInference
   immersiveDebuggerEnabled: 1
   immersiveDebuggerDisplayAtStartup: 0
