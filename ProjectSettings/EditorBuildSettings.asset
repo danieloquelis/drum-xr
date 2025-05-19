@@ -8,9 +8,15 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/MainScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/AudioScene.unity
     guid: 93b6554ecf0204e60ae3c12d1a71ffa9
+  - enabled: 0
+    path: Assets/Scenes/TipRecognitionTest.unity
+    guid: d1894400d1c0e489ca6797e7ae81297a
+  - enabled: 1
+    path: Assets/PassthroughCameraApiSamples/MultiObjectDetection/MultiObjectDetection.unity
+    guid: 20c230cce46443841b5727b1d6100bfc
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 950cffd6d1376498e9442fb66ccdb5e3, type: 2}

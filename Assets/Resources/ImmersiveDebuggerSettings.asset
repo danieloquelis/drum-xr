@@ -29,7 +29,7 @@ MonoBehaviour:
     - Detection.MarkerAnchor
     - Audio.DrumAudioClassifier
   immersiveDebuggerEnabled: 1
-  immersiveDebuggerDisplayAtStartup: 0
+  immersiveDebuggerDisplayAtStartup: 1
   showInspectors: 0
   showConsole: 0
   followOverride: 1
