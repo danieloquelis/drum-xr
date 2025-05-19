@@ -1548,8 +1548,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73fd6cf047d844b96b2ef034fdf5bafc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_webCamTextureManager: {fileID: 302465110}
-  m_runInference: {fileID: 2039804215}
+  webCamTextureManager: {fileID: 302465110}
+  runInference: {fileID: 2039804215}
 --- !u!4 &1939146247
 Transform:
   m_ObjectHideFlags: 0
@@ -1740,7 +1740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35a16b177a80d46b6b6c49d58fb33402, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inputSize: {x: 640, y: 640}
+  inputSize: {x: 640, y: 640}
   m_backend: 256
   m_sentisModel: {fileID: 5022602860645237092, guid: 6c30b62518d224b52a634412db17a59b, type: 3}
   m_layersPerFrame: 25

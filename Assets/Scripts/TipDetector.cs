@@ -9,7 +9,7 @@ using Utils;
 public class TipDetector : MonoBehaviour
 {
     [Header("Model Config")]
-    [SerializeField] private Vector2Int m_inputSize = new(640, 640);
+    public Vector2Int inputSize = new(640, 640);
     [SerializeField] private BackendType m_backend = BackendType.GPUCompute;
     [SerializeField] private ModelAsset m_sentisModel;
     [SerializeField] private int m_layersPerFrame = 25;
@@ -53,8 +53,8 @@ public class TipDetector : MonoBehaviour
         var model = ModelLoader.Load(m_sentisModel);
         m_engine = new Worker(model, m_backend);
 
-        var dummy = new Texture2D(m_inputSize.x, m_inputSize.y);
-        var dummyTensor = TextureConverter.ToTensor(dummy, m_inputSize.x, m_inputSize.y, 3);
+        var dummy = new Texture2D(inputSize.x, inputSize.y);
+        var dummyTensor = TextureConverter.ToTensor(dummy, inputSize.x, inputSize.y, 3);
         m_engine.Schedule(dummyTensor);
         dummyTensor.Dispose();
 
@@ -67,23 +67,14 @@ public class TipDetector : MonoBehaviour
         return m_started;
     }
 
-    public void RunInference(Texture targetTexture)
+    public void RunInference(Texture2D targetTexture)
     {
         if (m_started || !targetTexture) return;
         m_input?.Dispose();
 
         m_uiInference.SetDetectionCapture(targetTexture);
-        
-        // var convertedTexture = new Texture2D(targetTexture.width, targetTexture.height, TextureFormat.RGBA32, false);
-        // var rt = RenderTexture.GetTemporary(targetTexture.width, targetTexture.height);
-        // Graphics.Blit(targetTexture, rt);
-        // RenderTexture.active = rt;
-        // convertedTexture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-        // convertedTexture.Apply();
-        // RenderTexture.ReleaseTemporary(rt);
-        
-        //m_input = OnnxUtils.TextureToTensor(convertedTexture, m_inputSize.x, m_inputSize.y);
-        m_input = TextureConverter.ToTensor(targetTexture, m_inputSize.x, m_inputSize.y, 3);
+        m_input = OnnxUtils.TextureToTensor(targetTexture, inputSize.x, inputSize.y);
+        //m_input = TextureConverter.ToTensor(targetTexture, inputSize.x, inputSize.y, 3);
         m_schedule = m_engine.ScheduleIterable(m_input);
         
         m_downloadState = 0;
@@ -150,10 +141,10 @@ public class TipDetector : MonoBehaviour
 
                         if (cx < 1f && cy < 1f && w < 1f && h < 1f)
                         {
-                            cx *= m_inputSize.x;
-                            cy *= m_inputSize.y;
-                            w  *= m_inputSize.x;
-                            h  *= m_inputSize.y;
+                            cx *= inputSize.x;
+                            cy *= inputSize.y;
+                            w  *= inputSize.x;
+                            h  *= inputSize.y;
                         }
 
                         if (conf > confidenceThreshold)
@@ -162,8 +153,21 @@ public class TipDetector : MonoBehaviour
                         }
                     }
 
-                    var (filteredBoxes, _) = OnnxUtils.NonMaxSuppression(boxes, iouThreshold);
-                    m_uiInference.DrawUIBoxes(filteredBoxes,  m_inputSize.x, m_inputSize.y);
+                    var (filteredBoxes, filteredConfidences) = OnnxUtils.NonMaxSuppression(boxes, iouThreshold);
+                    for (var i = 0; i < filteredBoxes.Count; i++)
+                    {
+                        var box = filteredBoxes[i];
+                        var conf = filteredConfidences[i];
+
+                        var x1 = box[0] - box[2] / 2f;
+                        var y1 = box[1] - box[3] / 2f;
+                        var x2 = box[0] + box[2] / 2f;
+                        var y2 = box[1] + box[3] / 2f;
+
+                        Debug.Log($"[{i}] Confidence: {conf:F2}, Box: ({x1:F0}, {y1:F0}, {x2:F0}, {y2:F0})");
+                    }
+                    
+                    //m_uiInference.DrawUIBoxes(filteredBoxes,  inputSize.x, inputSize.y);
                     m_outputBoxes?.Dispose();
                     m_started = false;
                     break;
