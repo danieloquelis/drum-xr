@@ -1,37 +1,37 @@
 using System;
 using System.Collections;
-using PassthroughCameraSamples.MultiObjectDetection;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Sentis;
+using PassthroughCameraSamples.MultiObjectDetection;
+using Utils;
 
 public class TipDetector : MonoBehaviour
 {
     [Header("Model Config")]
-    [SerializeField] private Vector2Int m_inputSize = new(560, 560);
+    [SerializeField] private Vector2Int m_inputSize = new(640, 640);
     [SerializeField] private BackendType m_backend = BackendType.GPUCompute;
     [SerializeField] private ModelAsset m_sentisModel;
     [SerializeField] private int m_layersPerFrame = 25;
-    [SerializeField, Range(0, 1)] private float m_scoreThreshold = 0.5f;
+
+    [Header("Detection Thresholds")]
+    [Range(0f, 1f)] public float confidenceThreshold = 0.4f;
+    [Range(0f, 1f)] public float iouThreshold = 0.5f;
 
     [Header("UI")]
     [SerializeField] private SentisInferenceUiManager m_uiInference;
-    [SerializeField] private TextAsset m_labelsAsset;
 
     public bool IsModelLoaded { get; private set; } = false;
 
     private Worker m_engine;
     private Tensor<float> m_input;
     private Tensor<float> m_pullBoxes;
-    private Tensor<int> m_pullLabelIds;
     private Tensor<float> m_outputBoxes;
-    private Tensor<int> m_outputLabelIds;
-
-    private string[] m_labels;
 
     private IEnumerator m_schedule;
     private bool m_started = false;
     private bool m_isWaiting = false;
-    private int m_download_state = 0;
+    private int m_downloadState = 0;
 
     private void OnDestroy()
     {
@@ -45,7 +45,6 @@ public class TipDetector : MonoBehaviour
     private IEnumerator Start()
     {
         yield return new WaitForSeconds(0.05f);
-        m_labels = m_labelsAsset.text.Split('\n');
         LoadModel();
     }
 
@@ -54,9 +53,10 @@ public class TipDetector : MonoBehaviour
         var model = ModelLoader.Load(m_sentisModel);
         m_engine = new Worker(model, m_backend);
 
-        var dummy = TextureConverter.ToTensor(new Texture2D(m_inputSize.x, m_inputSize.y), m_inputSize.x, m_inputSize.y, 3);
-        m_engine.Schedule(dummy);
-        dummy.Dispose();
+        var dummy = new Texture2D(m_inputSize.x, m_inputSize.y);
+        var dummyTensor = TextureConverter.ToTensor(dummy, m_inputSize.x, m_inputSize.y, 3);
+        m_engine.Schedule(dummyTensor);
+        dummyTensor.Dispose();
 
         Debug.Log("Sentis model loaded.");
         IsModelLoaded = true;
@@ -67,24 +67,32 @@ public class TipDetector : MonoBehaviour
         return m_started;
     }
 
+    public void RunInference(Texture targetTexture)
+    {
+        if (m_started || !targetTexture) return;
+        m_input?.Dispose();
+
+        m_uiInference.SetDetectionCapture(targetTexture);
+        
+        // var convertedTexture = new Texture2D(targetTexture.width, targetTexture.height, TextureFormat.RGBA32, false);
+        // var rt = RenderTexture.GetTemporary(targetTexture.width, targetTexture.height);
+        // Graphics.Blit(targetTexture, rt);
+        // RenderTexture.active = rt;
+        // convertedTexture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        // convertedTexture.Apply();
+        // RenderTexture.ReleaseTemporary(rt);
+        
+        //m_input = OnnxUtils.TextureToTensor(convertedTexture, m_inputSize.x, m_inputSize.y);
+        m_input = TextureConverter.ToTensor(targetTexture, m_inputSize.x, m_inputSize.y, 3);
+        m_schedule = m_engine.ScheduleIterable(m_input);
+        
+        m_downloadState = 0;
+        m_started = true;
+    }
+
     private void Update()
     {
         InferenceUpdate();
-    }
-
-    public void RunInference(Texture targetTexture)
-    {
-        if (!m_started && targetTexture)
-        {
-            m_input?.Dispose();
-
-            m_uiInference.SetDetectionCapture(targetTexture);
-            m_input = TextureConverter.ToTensor(targetTexture, m_inputSize.x, m_inputSize.y, 3);
-            m_schedule = m_engine.ScheduleIterable(m_input);
-            m_download_state = 0;
-            m_started = true;
-            Debug.LogWarning("RunInference Started");
-        }
     }
 
     private void InferenceUpdate()
@@ -92,30 +100,30 @@ public class TipDetector : MonoBehaviour
         if (!m_started) return;
         try
         {
-            switch (m_download_state)
+            switch (m_downloadState)
             {
                 case 0:
-                    int it = 0;
+                    var it = 0;
                     while (m_schedule.MoveNext())
                     {
                         if (++it % m_layersPerFrame == 0)
                             return;
                     }
-                    m_download_state = 1;
+                    m_downloadState = 1;
                     break;
 
                 case 1:
-                    m_pullBoxes = m_engine.PeekOutput("dets") as Tensor<float>;
+                    m_pullBoxes = m_engine.PeekOutput() as Tensor<float>;
                     if (m_pullBoxes?.dataOnBackend != null)
                     {
                         m_pullBoxes.ReadbackRequest();
                         m_isWaiting = true;
-                        m_download_state = 2;
+                        m_downloadState = 2;
                     }
                     else
                     {
-                        Debug.LogError("No output tensor for 'dets'");
-                        m_download_state = 4;
+                        Debug.LogError("No output tensor found.");
+                        m_downloadState = 4;
                     }
                     break;
 
@@ -124,55 +132,39 @@ public class TipDetector : MonoBehaviour
                     {
                         m_outputBoxes = m_pullBoxes.ReadbackAndClone();
                         m_isWaiting = false;
-                        m_download_state = 3;
-                    }
-                    break;
-
-                case 3:
-                    m_pullLabelIds = m_engine.PeekOutput("labels") as Tensor<int>;
-                    if (m_pullLabelIds?.dataOnBackend != null)
-                    {
-                        m_pullLabelIds.ReadbackRequest();
-                        m_isWaiting = true;
-                        m_download_state = 5;
-                    }
-                    else
-                    {
-                        Debug.LogError("No output tensor for 'labels'");
-                        m_download_state = 4;
-                    }
-                    break;
-
-                case 5:
-                    if (m_isWaiting && m_pullLabelIds.IsReadbackRequestDone())
-                    {
-                        m_outputLabelIds = m_pullLabelIds.ReadbackAndClone();
-                        m_isWaiting = false;
-                        m_download_state = 6;
+                        m_downloadState = 6;
                     }
                     break;
 
                 case 6:
-                    // Filter only class "tip"
-                    for (int i = 0; i < m_outputLabelIds.count; i++)
+                    var boxes = new List<(float[] box, float conf)>();
+                    var numBoxes = m_outputBoxes.shape[2];
+
+                    for (var i = 0; i < numBoxes; i++)
                     {
-                        int labelIndex = m_outputLabelIds[i];
-                        if (labelIndex < 0 || m_labels[labelIndex].Trim().ToLower() != "tip")
+                        var cx = m_outputBoxes[0, 0, i];
+                        var cy = m_outputBoxes[0, 1, i];
+                        var w  = m_outputBoxes[0, 2, i];
+                        var h  = m_outputBoxes[0, 3, i];
+                        var conf = m_outputBoxes[0, 4, i];
+
+                        if (cx < 1f && cy < 1f && w < 1f && h < 1f)
                         {
-                            m_outputLabelIds[i] = -1;
+                            cx *= m_inputSize.x;
+                            cy *= m_inputSize.y;
+                            w  *= m_inputSize.x;
+                            h  *= m_inputSize.y;
+                        }
+
+                        if (conf > confidenceThreshold)
+                        {
+                            boxes.Add((new[] { cx, cy, w, h }, conf));
                         }
                     }
 
-                    m_uiInference.DrawUIBoxes(
-                        m_outputBoxes,
-                        m_outputLabelIds,
-                        m_inputSize.x,
-                        m_inputSize.y
-                    );
-
+                    var (filteredBoxes, _) = OnnxUtils.NonMaxSuppression(boxes, iouThreshold);
+                    m_uiInference.DrawUIBoxes(filteredBoxes,  m_inputSize.x, m_inputSize.y);
                     m_outputBoxes?.Dispose();
-                    m_outputLabelIds?.Dispose();
-
                     m_started = false;
                     break;
 
@@ -188,4 +180,4 @@ public class TipDetector : MonoBehaviour
             m_started = false;
         }
     }
-}
+} 

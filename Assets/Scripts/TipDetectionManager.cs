@@ -8,7 +8,6 @@ public class TipDetectionManager : MonoBehaviour
     
     [Header("Sentis inference ref")]
     [SerializeField] private TipDetector m_runInference;
-    // [SerializeField] private SentisInferenceUIManager m_uiInference;
     
     private bool m_isSentisReady = false;
     

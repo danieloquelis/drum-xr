@@ -22,7 +22,7 @@ public class RecognitionTest : MonoBehaviour
 
     private IEnumerator RunAI(Texture2D picture)
     {
-        var inputTensor = PreprocessImage(picture);
+        var inputTensor = OnnxUtils.TextureToTensor(picture, 640, 640);
         var schedule = worker.ScheduleIterable(inputTensor);
         while (schedule.MoveNext())
         {
@@ -43,39 +43,6 @@ public class RecognitionTest : MonoBehaviour
         inputTensor.Dispose();
     }
     
-    private static Tensor<float> PreprocessImage(Texture2D texture)
-    {
-        texture = ImageUtils.Resize(texture, 640, 640);
-        texture = ImageUtils.FlipTextureVertically(texture); 
-
-        var pixels = texture.GetPixels32();
-        var input = new Tensor<float>(new TensorShape(1, 3, 640, 640));
-
-        var floatPixels = new float[640 * 640 * 3];
-        for (var y = 0; y < 640; y++)
-        {
-            for (var x = 0; x < 640; x++)
-            {
-                var pixel = pixels[y * 640 + x];
-                floatPixels[(y * 640 + x) * 3 + 0] = pixel.r / 255f;
-                floatPixels[(y * 640 + x) * 3 + 1] = pixel.g / 255f;
-                floatPixels[(y * 640 + x) * 3 + 2] = pixel.b / 255f;
-            }
-        }
-
-        for (var c = 0; c < 3; c++)
-        {
-            for (var h = 0; h < 640; h++)
-            {
-                for (var w = 0; w < 640; w++)
-                {
-                    input[0, c, h, w] = floatPixels[(h * 640 + w) * 3 + c];
-                }
-            }
-        }
-
-        return input;
-    }
     
     private void ProcessOutput(Tensor<float> output)
     {

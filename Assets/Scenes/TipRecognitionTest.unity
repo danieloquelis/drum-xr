@@ -204,7 +204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7847449403238870662, guid: abfaad578d05e4a09838223134c41c46, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -975,7 +975,7 @@ GameObject:
   - component: {fileID: 1527393879}
   - component: {fileID: 1527393881}
   - component: {fileID: 1527393880}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: YoloRawImageContinous
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1125,7 +1125,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5464317018167149569, guid: 749c2b64d9125458da0686ace4bec00b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1192,7 +1192,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1667572034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1209,7 +1209,6 @@ MonoBehaviour:
   modelAsset: {fileID: 5022602860645237092, guid: 6c30b62518d224b52a634412db17a59b, type: 3}
   confidenceThreshold: 0.4
   iouThreshold: 0.5
-  results: []
 --- !u!4 &1667572035
 Transform:
   m_ObjectHideFlags: 0
@@ -1536,7 +1535,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1939146246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1712,7 +1711,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2039804214
 Transform:
   m_ObjectHideFlags: 0
@@ -1741,13 +1740,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35a16b177a80d46b6b6c49d58fb33402, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_inputSize: {x: 560, y: 560}
-  m_backend: 512
-  m_sentisModel: {fileID: 5022602860645237092, guid: 24949f17c358d42afa360af383de9c4b, type: 3}
+  m_inputSize: {x: 640, y: 640}
+  m_backend: 256
+  m_sentisModel: {fileID: 5022602860645237092, guid: 6c30b62518d224b52a634412db17a59b, type: 3}
   m_layersPerFrame: 25
-  m_scoreThreshold: 0.7
+  confidenceThreshold: 0.4
+  iouThreshold: 0.5
   m_uiInference: {fileID: 2039804217}
-  m_labelsAsset: {fileID: 0}
 --- !u!114 &2039804216
 MonoBehaviour:
   m_ObjectHideFlags: 0

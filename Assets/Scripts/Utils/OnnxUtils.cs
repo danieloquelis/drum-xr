@@ -1,11 +1,46 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Sentis;
 using UnityEngine;
 
 namespace Utils
 {
     public static class OnnxUtils
     {
+        public static Tensor<float> TextureToTensor(Texture2D texture, int width, int height)
+        {
+            texture = ImageUtils.Resize(texture, width, height);
+            texture = ImageUtils.FlipTextureVertically(texture); 
+
+            var pixels = texture.GetPixels32();
+            var input = new Tensor<float>(new TensorShape(1, 3, width, height));
+
+            var floatPixels = new float[width * height * 3];
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var pixel = pixels[y * height + x];
+                    floatPixels[(y * height + x) * 3 + 0] = pixel.r / 255f;
+                    floatPixels[(y * height + x) * 3 + 1] = pixel.g / 255f;
+                    floatPixels[(y * height + x) * 3 + 2] = pixel.b / 255f;
+                }
+            }
+
+            for (var c = 0; c < 3; c++)
+            {
+                for (var h = 0; h < height; h++)
+                {
+                    for (var w = 0; w < width; w++)
+                    {
+                        input[0, c, h, w] = floatPixels[(h * height + w) * 3 + c];
+                    }
+                }
+            }
+
+            return input;
+        }
+        
         public static (List<float[]> boxes, List<float> confidence) NonMaxSuppression(List<(float[] box, float conf)> detections, float iouThreshold = 0.5f)
         {
             var N = detections.Count;
