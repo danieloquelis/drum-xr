@@ -20,7 +20,11 @@ public class TipDetector : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private SentisInferenceUiManager m_uiInference;
-
+    
+    [SerializeField] private Camera cameraEye; // assign OVRCameraRig.CenterEyeAnchor or LeftEyeAnchor
+    [SerializeField] private GameObject detectionPrefab; // sphere or cube
+    [SerializeField] private EnvironmentRayCastSampleManager environmentRaycaster; // your existing one
+    
     public bool IsModelLoaded { get; private set; } = false;
 
     private Worker m_engine;
@@ -74,7 +78,6 @@ public class TipDetector : MonoBehaviour
 
         m_uiInference.SetDetectionCapture(targetTexture);
         m_input = OnnxUtils.TextureToTensor(targetTexture, inputSize.x, inputSize.y);
-        //m_input = TextureConverter.ToTensor(targetTexture, inputSize.x, inputSize.y, 3);
         m_schedule = m_engine.ScheduleIterable(m_input);
         
         m_downloadState = 0;
@@ -158,16 +161,46 @@ public class TipDetector : MonoBehaviour
                     {
                         var box = filteredBoxes[i];
                         var conf = filteredConfidences[i];
-
+                    
                         var x1 = box[0] - box[2] / 2f;
                         var y1 = box[1] - box[3] / 2f;
                         var x2 = box[0] + box[2] / 2f;
                         var y2 = box[1] + box[3] / 2f;
-
+                    
                         Debug.Log($"[{i}] Confidence: {conf:F2}, Box: ({x1:F0}, {y1:F0}, {x2:F0}, {y2:F0})");
                     }
                     
-                    //m_uiInference.DrawUIBoxes(filteredBoxes,  inputSize.x, inputSize.y);
+                    for (var i = 0; i < filteredBoxes.Count; i++)
+                    {
+                        var box = filteredBoxes[i];
+                        var cx = box[0]; // center x in input image space (640)
+                        var cy = box[1]; // center y in input image space (640)
+
+                        // ✅ Normalize to 0–1 range for viewport space
+                        var viewportX = cx / inputSize.x;
+                        var viewportY = cy / inputSize.y;
+
+                        // ✅ Invert Y to match Unity viewport space
+                        var viewportPos = new Vector2(viewportX, 1.0f - viewportY);
+
+                        // ✅ Build ray from camera (e.g., CenterEyeAnchor)
+                        Ray ray = cameraEye.ViewportPointToRay(viewportPos);
+
+                        // ✅ Raycast into scene
+                        var hitPoint = environmentRaycaster.PlaceGameObjectByScreenPos(ray);
+                        if (hitPoint.HasValue)
+                        {
+                            Instantiate(detectionPrefab, hitPoint.Value, Quaternion.identity);
+                            Debug.Log($"Spawned detection at {hitPoint.Value}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Raycast failed for detection[{i}] at viewport {viewportPos}");
+                        }
+                    }
+
+
+                    
                     m_outputBoxes?.Dispose();
                     m_started = false;
                     break;

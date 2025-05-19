@@ -62,3 +62,4 @@ TempAssembly.dll
 # ignoring it as this can be fetched from official repository.
 Assets/PassthroughCameraApiSamples/*
 Assets/PassthroughCameraApiSamples.meta
+Assets/Samples/*

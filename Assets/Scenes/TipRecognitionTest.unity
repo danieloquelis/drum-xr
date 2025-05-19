@@ -158,6 +158,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1748868316715821956, guid: abfaad578d05e4a09838223134c41c46, type: 3}
+      propertyPath: Eye
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7047676844597515174, guid: abfaad578d05e4a09838223134c41c46, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1747,6 +1751,9 @@ MonoBehaviour:
   confidenceThreshold: 0.4
   iouThreshold: 0.5
   m_uiInference: {fileID: 2039804217}
+  cameraEye: {fileID: 1511178045}
+  detectionPrefab: {fileID: 4199183768428282981, guid: 1be023c40ea39434d8fa15f85a9a7136, type: 3}
+  environmentRaycaster: {fileID: 1594545095}
 --- !u!114 &2039804216
 MonoBehaviour:
   m_ObjectHideFlags: 0
