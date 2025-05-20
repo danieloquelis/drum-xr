@@ -1510,18 +1510,6 @@ PrefabInstance:
       value: '[Kick] NoteTarget'
       objectReference: {fileID: 0}
     - target: {fileID: 6407687413539302780, guid: 9912b6fa414974c2caee13742275b643, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6407687413539302780, guid: 9912b6fa414974c2caee13742275b643, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 6407687413539302780, guid: 9912b6fa414974c2caee13742275b643, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.16666667
-      objectReference: {fileID: 0}
-    - target: {fileID: 6407687413539302780, guid: 9912b6fa414974c2caee13742275b643, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.03999996
       objectReference: {fileID: 0}
