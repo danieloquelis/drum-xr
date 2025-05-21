@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Threading.Tasks;
 using Meta.XR.ImmersiveDebugger;
 using Models;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Detection
 {
@@ -12,6 +14,8 @@ namespace Detection
         [SerializeField] private TMP_Text label;
         public DrumPadType drumPadType;
 
+        public UnityEvent<DrumPadType> onPadTouched;
+        
         private Transform m_centerEye;
 
         private void Awake()
@@ -25,45 +29,52 @@ namespace Detection
             label.text = drumPadType.ToString();
         }
 
-        [DebugMember]
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject.layer != LayerMask.NameToLayer("DrumStick"))
+            {
+                return;
+            }
+            
+            onPadTouched?.Invoke(drumPadType);
+        }
+        
         public void SaveAnchor()
         {
             var anchor = GetComponent<OVRSpatialAnchor>();
-            if (!anchor)
-            {
-                Debug.Log($"No OVRSpatialAnchor found on prefab for {drumPadType}");
-                return;
-            }
+            if (anchor) return;
+            
+            Debug.LogWarning($"No OVRSpatialAnchor found on prefab for {drumPadType}. Adding one...");
+            StartCoroutine(CreateSpatialAnchor());
+        }
+        
+        private IEnumerator CreateSpatialAnchor()
+        {
+            var anchor = gameObject.AddComponent<OVRSpatialAnchor>();
 
+            // Wait for the async creation
+            yield return new WaitUntil(() => anchor.Created);
             _ = SaveAsync(anchor);
         }
     
-        [DebugMember]
         private async Task SaveAsync(OVRSpatialAnchor anchor)
         {
             try
             {
                 var result = await anchor.SaveAnchorAsync();
-                if (!result.Success)
-                {
-                    Debug.Log($"Anchor saved for {drumPadType}");
-                }
-                else
+                if (!result)
                 {
                     Debug.LogError($"Failed to save anchor for {drumPadType}");
+                    return;
                 }
+                
+                PlayerPrefs.SetString($"{drumPadType}", anchor.Uuid.ToString());
+                PlayerPrefs.Save();
+                Debug.Log($"Anchor saved for {drumPadType}, UUID: {anchor.Uuid}");
             }
             catch (Exception exception)
             {
-                Debug.LogError($"Failed to save anchor for {drumPadType}: {exception.Message}");
-            }
-        }
-
-        private void Update()
-        {
-            if (m_centerEye)
-            {
-                label.transform.LookAt(m_centerEye);
+                Debug.LogError($"Exception saving anchor for {drumPadType}: {exception.Message}");
             }
         }
     }

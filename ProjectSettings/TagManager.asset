@@ -29,6 +29,7 @@ TagManager:
   - SamplesInfoPanel
   - QDSUIToggleCheckboxRadio
   - NoteHitZone
+  - DrumStick
   layers:
   - Default
   - TransparentFX
@@ -36,8 +37,8 @@ TagManager:
   - Overlay UI
   - Water
   - UI
-  - 
-  - 
+  - DrumPad
+  - DrumStick
   - 
   - 
   - 
