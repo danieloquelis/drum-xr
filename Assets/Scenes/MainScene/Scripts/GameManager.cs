@@ -11,8 +11,6 @@ public class GameManager : MonoBehaviour
     
     private readonly Dictionary<Guid, DrumPadType> m_padAnchorsUuids = new();
     private readonly List<OVRSpatialAnchor.UnboundAnchor> m_unboundAnchors = new();
-
-    private List<DrumPad> m_spawnedPads = new();
     
     private void Awake()
     {
@@ -28,13 +26,6 @@ public class GameManager : MonoBehaviour
             {
                 Debug.LogError("[Start] Failed to load anchors.");
                 // TODO: Show an error
-                return;
-            }
-
-            foreach (var spawnedPad in m_spawnedPads)
-            {
-                spawnedPad.onPadTouched.AddListener(OnPadTouched);
-                Debug.Log($"[Start] Added listener for {spawnedPad.drumPadType}");
             }
         }
         catch (Exception e)
@@ -79,7 +70,7 @@ public class GameManager : MonoBehaviour
     private async Task<bool> LoadAnchorsByUuid(IEnumerable<Guid> uuids)
     {
         var result = await OVRSpatialAnchor.LoadUnboundAnchorsAsync(uuids, m_unboundAnchors);
-
+        
         if (!result.Success)
         {
             Debug.LogError($"Load failed with error {result.Status}.");
@@ -99,13 +90,16 @@ public class GameManager : MonoBehaviour
                 
                 var drumPadType = m_padAnchorsUuids[anchor.Uuid];
                 var prefab = GetDrumPad(drumPadType);
-                var drumPad = Instantiate(prefab);
+                
+                var drumPad = Instantiate(prefab, transform.position, Quaternion.identity);
+                drumPad.onPadTouched.AddListener(OnPadTouched);
+                drumPad.MirrorLabel();
+                
                 var spatialAnchor = drumPad.gameObject.AddComponent<OVRSpatialAnchor>();
                 
                 // Because the anchor has already been localized, BindTo will set the
                 // transform component immediately.
                 unboundAnchor.BindTo(spatialAnchor);
-                m_spawnedPads.Add(drumPad);
             }, unboundAnchor);
         }
 

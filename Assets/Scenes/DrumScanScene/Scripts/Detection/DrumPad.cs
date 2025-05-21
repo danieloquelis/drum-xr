@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
-using Meta.XR.ImmersiveDebugger;
 using Models;
 using TMPro;
 using UnityEngine;
@@ -13,29 +12,21 @@ namespace Detection
     {
         [SerializeField] private TMP_Text label;
         public DrumPadType drumPadType;
-
         public UnityEvent<DrumPadType> onPadTouched;
-        
-        private Transform m_centerEye;
-
-        private void Awake()
-        {
-            var rig = FindFirstObjectByType<OVRCameraRig>();
-            m_centerEye = rig?.centerEyeAnchor;
-        }
 
         private void Start()
         {
             label.text = drumPadType.ToString();
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void OnCollisionEnter(Collision collision)
         {
-            if (other.gameObject.layer != LayerMask.NameToLayer("DrumStick"))
+            if (collision.collider.CompareTag("DrumStick"))
             {
                 return;
             }
             
+            Debug.Log($"[DrumPad OnTriggerEnter] {drumPadType}");
             onPadTouched?.Invoke(drumPadType);
         }
         
@@ -77,5 +68,12 @@ namespace Detection
                 Debug.LogError($"Exception saving anchor for {drumPadType}: {exception.Message}");
             }
         }
+
+        public void MirrorLabel()
+        {
+            var currentScale = label.gameObject.transform.localScale;
+            label.gameObject.transform.localScale = new Vector3(currentScale.x * -1, currentScale.y, currentScale.z);
+        }
+
     }
 }
