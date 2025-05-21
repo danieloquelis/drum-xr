@@ -14,15 +14,15 @@ namespace Scene
         private void Awake()
         {
             var json = PlayerPrefs.GetString("DrumAnchors", "[]");
-            var detections = JsonConvert.DeserializeObject<List<Anchor>>(json);
+            var detections = JsonConvert.DeserializeObject<List<DrumPadAnchor>>(json);
 
-            if (detections.Count == 0)
-            {
-                onAnchorsDataEmpty?.Invoke();
-            } else
-            {
-                onAnchorsDataLoaded?.Invoke();
-            }
+            // if (detections.Count == 0)
+            // {
+            //     onAnchorsDataEmpty?.Invoke();
+            // } else
+            // {
+            //     onAnchorsDataLoaded?.Invoke();
+            // }
         }
     }
 }

@@ -25,8 +25,7 @@ MonoBehaviour:
     DebugTypes:
     - Roboflow.RoboflowInference
     - Audio.DrumAudioClassifier
-    - Detection.DetectionMarkerSpawner
-    - Detection.MarkerAnchor
+    - Detection.DrumPad
     - Scenes.DrumScanScene.Scripts.Detection.DetectionManager
   immersiveDebuggerEnabled: 1
   immersiveDebuggerDisplayAtStartup: 0

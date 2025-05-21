@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Detection;
 using Meta.XR;
@@ -22,7 +23,7 @@ namespace Scenes.DrumScanScene.Scripts.Detection
 
         [Header("Placement")]
         [SerializeField] private EnvironmentRaycastManager environmentRaycastManager;
-        [SerializeField] private DetectionMarkerSpawner detectionMarkerSpawner;
+        [SerializeField] private DrumPadSpawner drumPadSpawner;
 
         [Header("UI")] 
         [SerializeField] private GameObject instructionDialog;
@@ -66,8 +67,19 @@ namespace Scenes.DrumScanScene.Scripts.Detection
         private void OnDetectionSuccess(string result)
         {
             m_isLoading = false;
-        
-            var response = JsonConvert.DeserializeObject<RootResponse>(result);
+            
+            RootResponse response;
+            try
+            {
+                response = JsonConvert.DeserializeObject<RootResponse>(result);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to parse response: {e.Message}");
+                ShowErrorDialog();
+                return;
+            }
+            
             if (response?.Outputs == null || response.Outputs.Count == 0)
             {
                 ShowNoDrumsDetectedInstruction();
@@ -87,7 +99,7 @@ namespace Scenes.DrumScanScene.Scripts.Detection
             var imageHeight = detection.RawRecognition.Image.Height;
             var camRes = PassthroughCameraUtils.GetCameraIntrinsics(Eye).Resolution;
             
-            var anchors = new List<Anchor>();
+            var anchors = new List<DrumPadAnchor>();
 
             foreach (var prediction in predictions)
             {
@@ -98,21 +110,36 @@ namespace Scenes.DrumScanScene.Scripts.Detection
 
                 if (!environmentRaycastManager.Raycast(ray, out var hit)) continue;
                 
-                detectionMarkerSpawner.SpawnAnchor(hit.point, prediction.Class);
+                var drumPadType = GetDrumPadType(prediction.Class);
+                drumPadSpawner.SpawnAnchor(hit.point, drumPadType);
                 
-                anchors.Add(new Anchor
+                anchors.Add(new DrumPadAnchor
                 {
-                    Class = prediction.Class,
-                    ScreenPosition = new Vector2Int(px, py),
-                    WorldPosition = hit.point
+                    type = drumPadType,
+                    screenPosition = new Vector2Int(px, py),
+                    worldPosition = new SerializableVector3(hit.normal)
                 });
             }
             
             PersistAnchors(anchors);
             successDialog.SetActive(true);
+            webCamTextureManager.WebCamTexture.Stop();
         }
 
-        private static void PersistAnchors(List<Anchor> anchors)
+        private static DrumPadType GetDrumPadType(string className)
+        {
+            return className switch
+            {
+                "snare_drum" => DrumPadType.Snare,
+                "bass_drum" => DrumPadType.Kick,
+                "tom_toms" => DrumPadType.Tom,
+                "hit_hat" => DrumPadType.HiHat,
+                "crash_cymbal" => DrumPadType.Cymbal,
+                _ => DrumPadType.Unknown
+            };
+        }
+
+        private static void PersistAnchors(List<DrumPadAnchor> anchors)
         {
             if (anchors.Count == 0)
             {
@@ -133,6 +160,11 @@ namespace Scenes.DrumScanScene.Scripts.Detection
         }
 
         private void OnDetectionError(RoboflowInference.ErrorType error)
+        {
+            ShowErrorDialog();
+        }
+
+        private void ShowErrorDialog()
         {
             m_isLoading = false;
             errorDialog.SetActive(true);

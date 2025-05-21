@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4808800545184265792
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3335971714280055858}
+  - component: {fileID: 5954242884350042105}
+  m_Layer: 0
+  m_Name: DrumPadSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3335971714280055858
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4808800545184265792}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5954242884350042105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4808800545184265792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcdc80ea257c24a2e96d35e8be31e20f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drumPads: []
+  minSpawnDistance: 0.25
+  spawnedMarkers:
+  - {fileID: 5038192205774015782, guid: d84abf3869208492998925a1c11177f1, type: 3}
+  - {fileID: 4199183768428282981, guid: 1be023c40ea39434d8fa15f85a9a7136, type: 3}
+  - {fileID: 843020417911648392, guid: 992dcbccb63014d32982e429c855e29d, type: 3}
+  - {fileID: 325577807030728145, guid: 0d12d54495c63459a948c87b88684a99, type: 3}
+  - {fileID: 4358375851695250476, guid: dd9ef820080794edfa3d78efab010b2e, type: 3}

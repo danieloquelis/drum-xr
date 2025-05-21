@@ -1,14 +1,16 @@
 using System;
 using System.Threading.Tasks;
 using Meta.XR.ImmersiveDebugger;
+using Models;
+using TMPro;
 using UnityEngine;
 
 namespace Detection
 {
-    public class MarkerAnchor : MonoBehaviour
+    public class DrumPad : MonoBehaviour
     {
-        [SerializeField] private TextMesh label;
-        public string Class { get; private set; }
+        [SerializeField] private TMP_Text label;
+        public DrumPadType drumPadType;
 
         private Transform m_centerEye;
 
@@ -18,10 +20,9 @@ namespace Detection
             m_centerEye = rig?.centerEyeAnchor;
         }
 
-        public void SetClass(string className)
+        private void Start()
         {
-            Class = className;
-            label.text = className;
+            label.text = drumPadType.ToString();
         }
 
         [DebugMember]
@@ -30,7 +31,7 @@ namespace Detection
             var anchor = GetComponent<OVRSpatialAnchor>();
             if (!anchor)
             {
-                Debug.LogWarning($"No OVRSpatialAnchor found on prefab for class {Class}");
+                Debug.Log($"No OVRSpatialAnchor found on prefab for {drumPadType}");
                 return;
             }
 
@@ -45,16 +46,16 @@ namespace Detection
                 var result = await anchor.SaveAnchorAsync();
                 if (!result.Success)
                 {
-                    Debug.Log($"Anchor saved for class {Class}");
+                    Debug.Log($"Anchor saved for {drumPadType}");
                 }
                 else
                 {
-                    Debug.LogError($"Failed to save anchor for class {Class}");
+                    Debug.LogError($"Failed to save anchor for {drumPadType}");
                 }
             }
             catch (Exception exception)
             {
-                Debug.LogError($"Failed to save anchor for class {Class}: {exception.Message}");
+                Debug.LogError($"Failed to save anchor for {drumPadType}: {exception.Message}");
             }
         }
 
