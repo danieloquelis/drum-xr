@@ -47,3 +47,4 @@ MonoBehaviour:
   scenes:
   - StartScene
   - DrumScanScene
+  - MainScene

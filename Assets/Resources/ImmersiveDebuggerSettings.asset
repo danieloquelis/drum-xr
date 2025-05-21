@@ -24,10 +24,10 @@ MonoBehaviour:
   - AssemblyName: Assembly-CSharp
     DebugTypes:
     - Roboflow.RoboflowInference
-    - Detection.DetectionManager
+    - Audio.DrumAudioClassifier
     - Detection.DetectionMarkerSpawner
     - Detection.MarkerAnchor
-    - Audio.DrumAudioClassifier
+    - Scenes.DrumScanScene.Scripts.Detection.DetectionManager
   immersiveDebuggerEnabled: 1
   immersiveDebuggerDisplayAtStartup: 0
   showInspectors: 0

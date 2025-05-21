@@ -5,21 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/AudioScene.unity
-    guid: 93b6554ecf0204e60ae3c12d1a71ffa9
-  - enabled: 0
-    path: Assets/Scenes/TipRecognitionTest.unity
-    guid: d1894400d1c0e489ca6797e7ae81297a
-  - enabled: 0
-    path: Assets/Scenes/HandPoseDetection.unity
-    guid: 45d189390adac4a4b85a8f718f6a89f6
   - enabled: 1
     path: Assets/Scenes/StartScene/StartScene.unity
     guid: cdf0df2d41b4d48468cfb3e4445384fc
   - enabled: 1
     path: Assets/Scenes/DrumScanScene/DrumScanScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/MainScene/MainScene.unity
+    guid: f300a2c7523364daa944ff15d8880154
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 950cffd6d1376498e9442fb66ccdb5e3, type: 2}
