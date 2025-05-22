@@ -30,6 +30,7 @@ namespace Scenes.DrumScanScene.Scripts.Detection
         [SerializeField] private TMP_Text instructionDescription;
         [SerializeField] private GameObject errorDialog;
         [SerializeField] private GameObject successDialog;
+        [SerializeField] private GameObject loadingCanvas;
         
         private bool m_isLoading;
         private PassthroughCameraEye Eye => webCamTextureManager.Eye;
@@ -44,6 +45,7 @@ namespace Scenes.DrumScanScene.Scripts.Detection
             
             errorDialog.SetActive(false);
             successDialog.SetActive(false);
+            SetLoading(false);
         }
 
         public void StartDetection()
@@ -59,13 +61,13 @@ namespace Scenes.DrumScanScene.Scripts.Detection
 
         private void OnDetectionStart()
         {
-            m_isLoading = true;
+            SetLoading(true);
         }
 
         [DebugMember]
         private void OnDetectionSuccess(string result)
         {
-            m_isLoading = false;
+            SetLoading(false);
             
             RootResponse response;
             try
@@ -142,8 +144,14 @@ namespace Scenes.DrumScanScene.Scripts.Detection
 
         private void ShowErrorDialog()
         {
-            m_isLoading = false;
+            SetLoading(false);
             errorDialog.SetActive(true);
         }
-    }
+
+        private void SetLoading(bool isLoading)
+        {
+            loadingCanvas.SetActive(isLoading);
+            m_isLoading = isLoading;
+        }
+     }
 }
