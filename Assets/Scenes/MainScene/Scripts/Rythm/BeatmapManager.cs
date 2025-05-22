@@ -6,25 +6,26 @@ namespace Rythm
 {
     public class BeatmapManager : MonoBehaviour
     {
-        public AudioSource fullSongAudio;
-        public float noteSpeed = 2.0f; // units per second
+        [SerializeField] public AudioSource fullSongAudio;
+        [SerializeField] private float noteSpeed = 2.0f;
 
         [Tooltip("Offset added to every note's time to compensate for latency.")]
-        public float globalNoteTimeOffset = 0.05f;
+        [SerializeField] private float globalNoteTimeOffset = 0.05f;
 
         public GameObject kickPrefab, snarePrefab, tomPrefab, cymbalPrefab;
         public Transform kickSpawn, snareSpawn, tomSpawn, cymbalSpawn;
         public Transform kickHitTarget, snareHitTarget, tomHitTarget, cymbalHitTarget;
 
-        private Dictionary<string, Queue<BeatNote>> beatQueues;
-        private float leadTime;
+        private Dictionary<string, Queue<BeatNote>> m_beatQueues;
+        private float m_leadTime;
+        private bool m_isPlaying;
 
-        void Start()
+        public void StartSong()
         {
             // Calculate lead time based on distance and speed (use kick lane for reference)
-            leadTime = Vector3.Distance(kickSpawn.position, kickHitTarget.position) / noteSpeed;
+            m_leadTime = Vector3.Distance(kickSpawn.position, kickHitTarget.position) / noteSpeed;
 
-            beatQueues = new Dictionary<string, Queue<BeatNote>>
+            m_beatQueues = new Dictionary<string, Queue<BeatNote>>
             {
                 { "kick", LoadBeatmap("beatmaps/kick") },
                 { "snare", LoadBeatmap("beatmaps/snare") },
@@ -35,17 +36,19 @@ namespace Rythm
             fullSongAudio.Play();
         }
 
-        void Update()
+        private void Update()
         {
-            float currentTime = fullSongAudio.time;
+            if (!fullSongAudio.isPlaying) return;
+            
+            var currentTime = fullSongAudio.time;
 
-            foreach (var pair in beatQueues)
+            foreach (var pair in m_beatQueues)
             {
-                string type = pair.Key;
-                Queue<BeatNote> queue = pair.Value;
-                Transform spawn = GetSpawnPoint(type);
+                var type = pair.Key;
+                var queue = pair.Value;
+                var spawn = GetSpawnPoint(type);
 
-                while (queue.Count > 0 && queue.Peek().time + globalNoteTimeOffset <= currentTime + leadTime)
+                while (queue.Count > 0 && queue.Peek().time + globalNoteTimeOffset <= currentTime + m_leadTime)
                 {
                     var note = queue.Dequeue();
                     SpawnNote(type, spawn, note.time + globalNoteTimeOffset);
@@ -53,17 +56,17 @@ namespace Rythm
             }
         }
 
-        void SpawnNote(string type, Transform spawnPoint, float targetTime)
+        private void SpawnNote(string type, Transform spawnPoint, float targetTime)
         {
-            GameObject prefab = GetPrefab(type);
-            if (prefab == null || spawnPoint == null) return;
+            var prefab = GetPrefab(type);
+            if (!prefab || !spawnPoint) return;
 
-            GameObject note = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
-            NoteMover mover = note.GetComponent<NoteMover>();
+            var note = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+            var mover = note.GetComponent<NoteMover>();
             mover.Initialize(targetTime, fullSongAudio, GetTargetPosition(type));
         }
 
-        GameObject GetPrefab(string type)
+        private GameObject GetPrefab(string type)
         {
             return type switch
             {
@@ -75,7 +78,7 @@ namespace Rythm
             };
         }
 
-        Transform GetSpawnPoint(string type)
+        private Transform GetSpawnPoint(string type)
         {
             return type switch
             {
@@ -87,7 +90,7 @@ namespace Rythm
             };
         }
 
-        Vector3 GetTargetPosition(string type)
+        private Vector3 GetTargetPosition(string type)
         {
             return type switch
             {
@@ -99,10 +102,10 @@ namespace Rythm
             };
         }
 
-        Queue<BeatNote> LoadBeatmap(string path)
+        private Queue<BeatNote> LoadBeatmap(string path)
         {
-            TextAsset json = Resources.Load<TextAsset>(path);
-            if (json == null)
+            var json = Resources.Load<TextAsset>(path);
+            if (!json)
             {
                 Debug.LogError($"Beatmap not found at Resources/{path}.json");
                 return new Queue<BeatNote>();
