@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Detection;
 using Models;
+using Rythm;
 using Scenes.MainScene.Scripts;
 using UnityEngine;
 using Utils;
@@ -15,9 +17,13 @@ public class GameManager : MonoBehaviour
     [Header("Anchorable Objects")] 
     [SerializeField] private List<AnchorableObject> anchorableGameObjects = new();
     
+    [Header("Rythm")]
+    [SerializeField] private BeatmapManager beatmapManager;
+    
     private readonly Dictionary<Guid, DrumPad> m_padAnchorsUuids = new();
     private readonly Dictionary<Guid, AnchorableObject> m_anchorsUuids = new();
     private readonly List<OVRSpatialAnchor.UnboundAnchor> m_unboundAnchors = new();
+    private readonly List<DrumPad> m_spawnedPads = new();
     
     private void Awake()
     {
@@ -42,6 +48,17 @@ public class GameManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"[StartException] {e.Message}");
+        }
+
+        beatmapManager.onNoteHitEventReceived.AddListener(OnNoteHit);
+    }
+
+    private void OnNoteHit(DrumPadType noteType)
+    {
+        foreach (var drumPad in m_spawnedPads.Where(drumPad => drumPad.drumPadType == noteType))
+        {
+            drumPad.HighLightPad();
+            break;
         }
     }
 
@@ -115,6 +132,7 @@ public class GameManager : MonoBehaviour
                     drumPad.MirrorLabel();
                 
                     spatialAnchor = drumPad.gameObject.AddComponent<OVRSpatialAnchor>();
+                    m_spawnedPads.Add(drumPad);
                 }
                 else if(m_anchorsUuids.TryGetValue(anchor.Uuid, out var anchorableObject))
                 {

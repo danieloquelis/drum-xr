@@ -11,9 +11,12 @@ namespace Detection
     public class DrumPad : MonoBehaviour
     {
         [SerializeField] private TMP_Text label;
+        [SerializeField] private ParticleSystem highlightEffect;
+        
         public DrumPadType drumPadType;
         public UnityEvent<DrumPadType> onPadTouched;
-
+        
+        
         private void Start()
         {
             label.text = drumPadType.ToString();
@@ -28,6 +31,11 @@ namespace Detection
             
             Debug.Log($"[DrumPad OnTriggerEnter] {drumPadType}");
             onPadTouched?.Invoke(drumPadType);
+        }
+
+        public void HighLightPad()
+        {
+            highlightEffect.Play();
         }
         
         public void SaveAnchor()

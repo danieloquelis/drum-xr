@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using Models;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.Events;
 
 namespace Rythm
 {
@@ -12,28 +15,29 @@ namespace Rythm
         [Tooltip("Offset added to every note's time to compensate for latency.")]
         [SerializeField] private float globalNoteTimeOffset = 0.05f;
 
-        public GameObject kickPrefab, snarePrefab, tomPrefab, cymbalPrefab;
-        public Transform kickSpawn, snareSpawn, tomSpawn, cymbalSpawn;
-        public Transform kickHitTarget, snareHitTarget, tomHitTarget, cymbalHitTarget;
+        public List<GameObject> notePrefabs;
+        public List<Transform> noteSpawnPoints;
+        public List<NoteTarget> noteTargets;
 
-        private Dictionary<string, Queue<BeatNote>> m_beatQueues;
+        public UnityEvent<DrumPadType> onNoteHitEventReceived;
+        
+        private Dictionary<DrumPadType, Queue<BeatNote>> m_beatQueues;
         private float m_leadTime;
         private bool m_isPlaying;
 
-        public void StartSong()
+        private void Start()
         {
-            // Calculate lead time based on distance and speed (use kick lane for reference)
-            m_leadTime = Vector3.Distance(kickSpawn.position, kickHitTarget.position) / noteSpeed;
-
-            m_beatQueues = new Dictionary<string, Queue<BeatNote>>
+            Assert.IsNotNull(noteTargets, "Note targets have not been set");
+            
+            foreach (var noteTarget in noteTargets)
             {
-                { "kick", LoadBeatmap("beatmaps/kick") },
-                { "snare", LoadBeatmap("beatmaps/snare") },
-                //{ "tom", LoadBeatmap("beatmaps/tom") },
-                //{ "cymbal", LoadBeatmap("beatmaps/cymbal") }
-            };
+                noteTarget.onNoteHit.AddListener(OnNoteHit);    
+            }
+        }
 
-            fullSongAudio.Play();
+        private void OnNoteHit(DrumPadType noteType)
+        {
+            onNoteHitEventReceived?.Invoke(noteType);
         }
 
         private void Update()
@@ -56,7 +60,31 @@ namespace Rythm
             }
         }
 
-        private void SpawnNote(string type, Transform spawnPoint, float targetTime)
+        public void StartSong()
+        {
+            // Calculate lead time based on distance and speed (use kick lane for reference)
+            m_leadTime = Vector3.Distance(noteSpawnPoints[0].position, noteTargets[0].transform.position) / noteSpeed;
+
+            m_beatQueues = new Dictionary<DrumPadType, Queue<BeatNote>>
+            {
+                { DrumPadType.Kick, LoadBeatmap("beatmaps/kick") },
+                { DrumPadType.Snare, LoadBeatmap("beatmaps/snare") },
+                //{ "tom", LoadBeatmap("beatmaps/tom") },
+                //{ "cymbal", LoadBeatmap("beatmaps/cymbal") }
+            };
+
+            fullSongAudio.Play();
+        }
+
+        public void StopSong()
+        {
+            fullSongAudio.Stop();
+            m_beatQueues.Clear();
+            m_leadTime = 0;
+            m_isPlaying = false;
+        }
+        
+        private void SpawnNote(DrumPadType type, Transform spawnPoint, float targetTime)
         {
             var prefab = GetPrefab(type);
             if (!prefab || !spawnPoint) return;
@@ -66,38 +94,38 @@ namespace Rythm
             mover.Initialize(targetTime, fullSongAudio, GetTargetPosition(type));
         }
 
-        private GameObject GetPrefab(string type)
+        private GameObject GetPrefab(DrumPadType type)
         {
             return type switch
             {
-                "kick" => kickPrefab,
-                "snare" => snarePrefab,
-                "tom" => tomPrefab,
-                "cymbal" => cymbalPrefab,
+                DrumPadType.Kick => notePrefabs[0],
+                DrumPadType.Snare => notePrefabs[1],
+                DrumPadType.Tom => notePrefabs[2],
+                DrumPadType.Cymbal => notePrefabs[3],
                 _ => null
             };
         }
 
-        private Transform GetSpawnPoint(string type)
+        private Transform GetSpawnPoint(DrumPadType padType)
         {
-            return type switch
+            return padType switch
             {
-                "kick" => kickSpawn,
-                "snare" => snareSpawn,
-                "tom" => tomSpawn,
-                "cymbal" => cymbalSpawn,
+                DrumPadType.Kick => noteSpawnPoints[0],
+                DrumPadType.Snare => noteSpawnPoints[1],
+                DrumPadType.Tom => noteSpawnPoints[2],
+                DrumPadType.Cymbal => noteSpawnPoints[3],
                 _ => null
             };
         }
 
-        private Vector3 GetTargetPosition(string type)
+        private Vector3 GetTargetPosition(DrumPadType padType)
         {
-            return type switch
+            return padType switch
             {
-                "kick" => kickHitTarget.position,
-                "snare" => snareHitTarget.position,
-                "tom" => tomHitTarget.position,
-                "cymbal" => cymbalHitTarget.position,
+                DrumPadType.Kick => noteTargets[0].transform.position,
+                DrumPadType.Snare => noteTargets[1].transform.position,
+                DrumPadType.Tom => noteTargets[2].transform.position,
+                DrumPadType.Cymbal => noteTargets[3].transform.position,
                 _ => Vector3.zero
             };
         }
