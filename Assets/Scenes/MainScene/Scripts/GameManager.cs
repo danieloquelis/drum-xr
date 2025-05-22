@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Detection;
 using Models;
+using Scenes.MainScene.Scripts;
 using UnityEngine;
+using Utils;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private List<DrumPad> drumPads;
     
-    private readonly Dictionary<Guid, DrumPadType> m_padAnchorsUuids = new();
+    [SerializeField] private List<DrumPad> drumPads;
+
+    [Header("Anchorable Objects")] 
+    [SerializeField] private List<AnchorableObject> anchorableGameObjects = new();
+    
+    private readonly Dictionary<Guid, DrumPad> m_padAnchorsUuids = new();
+    private readonly Dictionary<Guid, AnchorableObject> m_anchorsUuids = new();
     private readonly List<OVRSpatialAnchor.UnboundAnchor> m_unboundAnchors = new();
     
     private void Awake()
@@ -21,7 +28,11 @@ public class GameManager : MonoBehaviour
     {
         try
         {
-            var didAnchorsLoad = await LoadAnchorsByUuid(m_padAnchorsUuids.Keys);
+            // Merge pad and non-pad anchor Uuids
+            var anchorUuids = new HashSet<Guid>(m_padAnchorsUuids.Keys);
+            anchorUuids.UnionWith(m_anchorsUuids.Keys);
+            
+            var didAnchorsLoad = await LoadAnchorsByUuid(anchorUuids);
             if (!didAnchorsLoad)
             {
                 Debug.LogError("[Start] Failed to load anchors.");
@@ -41,30 +52,37 @@ public class GameManager : MonoBehaviour
 
     private void LoadAnchorRefs()
     {
+        // DrumPad Anchors
         foreach (var drumPad in drumPads)
         {
-            var uuidString = PlayerPrefs.GetString(drumPad.drumPadType.ToString(), null);
-            if (string.IsNullOrEmpty(uuidString))
-            {
-                continue;
-            }
+            var anchorUuid = LoadAnchorUuidFromPrefs(drumPad.drumPadType.ToString());
+            if (!anchorUuid.HasValue) continue;
             
-            Debug.Log($"[Pref] Anchor for {drumPad.drumPadType} is {uuidString}");
-            m_padAnchorsUuids.Add(Guid.Parse(uuidString), drumPad.drumPadType);
+            m_padAnchorsUuids.Add(anchorUuid.Value, drumPad);
+        }
+        
+        // OtherAnchorable Items
+        // Used to place other objects in the scene
+        foreach (var anchorableObject in anchorableGameObjects)
+        {
+            var menuAnchorUuid = LoadAnchorUuidFromPrefs(anchorableObject.type.ToString());
+            if (menuAnchorUuid.HasValue)
+            {
+                m_anchorsUuids.Add(menuAnchorUuid.Value, anchorableObject);
+            }
         }
     }
     
-    private DrumPad GetDrumPad(DrumPadType drumPadType)
+    private static Guid? LoadAnchorUuidFromPrefs(string key)
     {
-        return drumPadType switch
+        var uuidString = PlayerPrefs.GetString(key, null);
+        if (string.IsNullOrEmpty(uuidString))
         {
-            DrumPadType.Kick => drumPads[0],
-            DrumPadType.Snare => drumPads[1],
-            DrumPadType.HiHat => drumPads[2],
-            DrumPadType.Tom => drumPads[3],
-            DrumPadType.Cymbal => drumPads[4],
-            DrumPadType.Unknown => drumPads[1]
-        };
+            return null;
+        }
+            
+        Debug.Log($"[Pref] Anchor for key {key} is {uuidString}");
+        return Guid.Parse(uuidString);
     }
     
     private async Task<bool> LoadAnchorsByUuid(IEnumerable<Guid> uuids)
@@ -87,15 +105,27 @@ public class GameManager : MonoBehaviour
                 {
                     Debug.LogError($"Localization failed for anchor {unboundAnchor.Uuid}");
                 }
+
+                OVRSpatialAnchor spatialAnchor;
                 
-                var drumPadType = m_padAnchorsUuids[anchor.Uuid];
-                var prefab = GetDrumPad(drumPadType);
+                if (m_padAnchorsUuids.TryGetValue(anchor.Uuid, out var drumPadPrefab))
+                {
+                    var drumPad = Instantiate(drumPadPrefab, transform.position, Quaternion.identity);
+                    drumPad.onPadTouched.AddListener(OnPadTouched);
+                    drumPad.MirrorLabel();
                 
-                var drumPad = Instantiate(prefab, transform.position, Quaternion.identity);
-                drumPad.onPadTouched.AddListener(OnPadTouched);
-                drumPad.MirrorLabel();
-                
-                var spatialAnchor = drumPad.gameObject.AddComponent<OVRSpatialAnchor>();
+                    spatialAnchor = drumPad.gameObject.AddComponent<OVRSpatialAnchor>();
+                }
+                else if(m_anchorsUuids.TryGetValue(anchor.Uuid, out var anchorableObject))
+                {
+                    var anchorableGameObject = anchorableObject.gameObject;
+                    spatialAnchor = anchorableGameObject.AddComponent<OVRSpatialAnchor>();
+                }
+                else
+                {
+                    Debug.LogError($"Failed to find anchor for {anchor.Uuid}");
+                    return;
+                }
                 
                 // Because the anchor has already been localized, BindTo will set the
                 // transform component immediately.

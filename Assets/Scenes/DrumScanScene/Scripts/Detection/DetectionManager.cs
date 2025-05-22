@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Detection;
 using Meta.XR;
 using Meta.XR.ImmersiveDebugger;
@@ -99,8 +98,6 @@ namespace Scenes.DrumScanScene.Scripts.Detection
             var imageHeight = detection.RawRecognition.Image.Height;
             var camRes = PassthroughCameraUtils.GetCameraIntrinsics(Eye).Resolution;
             
-            // var anchors = new List<DrumPadAnchor>();
-
             foreach (var prediction in predictions)
             {
                 var px = Mathf.RoundToInt(prediction.X / imageWidth * camRes.x);
@@ -112,16 +109,8 @@ namespace Scenes.DrumScanScene.Scripts.Detection
                 
                 var drumPadType = GetDrumPadType(prediction.Class);
                 drumPadSpawner.SpawnAnchor(hit.point, drumPadType);
-                
-                // anchors.Add(new DrumPadAnchor
-                // {
-                //     type = drumPadType,
-                //     screenPosition = new Vector2Int(px, py),
-                //     worldPosition = new SerializableVector3(hit.normal)
-                // });
             }
             
-            // PersistAnchors(anchors);
             successDialog.SetActive(true);
             webCamTextureManager.WebCamTexture.Stop();
         }
@@ -138,19 +127,6 @@ namespace Scenes.DrumScanScene.Scripts.Detection
                 _ => DrumPadType.Unknown
             };
         }
-
-        // private static void PersistAnchors(List<DrumPadAnchor> anchors)
-        // {
-        //     if (anchors.Count == 0)
-        //     {
-        //         Debug.Log("No anchors to persist. Skipping...");
-        //         return;
-        //     }
-        //     
-        //     var json = JsonConvert.SerializeObject(anchors);
-        //     PlayerPrefs.SetString("DrumAnchors", json);
-        //     PlayerPrefs.Save();
-        // }
 
         private void ShowNoDrumsDetectedInstruction()
         {
