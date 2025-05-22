@@ -1,4 +1,4 @@
-# 🥁 DrumXR – Mixed Reality Drum Practice with Real-Time Feedback
+# 🥁 DrumXR – Mixed Reality Drum Practice
 
 ![DrumXR Portrait](./drumxr_portrait.png)
 
