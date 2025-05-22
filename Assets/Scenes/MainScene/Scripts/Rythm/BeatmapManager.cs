@@ -58,7 +58,7 @@ namespace Rythm
             GameObject prefab = GetPrefab(type);
             if (prefab == null || spawnPoint == null) return;
 
-            GameObject note = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
+            GameObject note = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
             NoteMover mover = note.GetComponent<NoteMover>();
             mover.Initialize(targetTime, fullSongAudio, GetTargetPosition(type));
         }

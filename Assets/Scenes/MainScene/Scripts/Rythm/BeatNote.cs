@@ -6,6 +6,5 @@ namespace Rythm
     public class BeatNote
     {
         public float time;     
-        public string type;  
     }
 }
