@@ -1,26 +1,25 @@
-# 🥁 DrumXR – Mixed Reality Drum Practice
-
-![DrumXR Portrait](./drumxr_portrait.png)
+# DrumXR – Mixed Reality Drum Practice
 
 **DrumXR** turns your **real acoustic drum kit** into an immersive learning experience using mixed reality and AI. Designed for Meta Quest, DrumXR blends physical drumming with spatial visual guidance to improve timing, rhythm, and technique — especially for beginners.
 
-🎬 **Demo Video:**  
-[Watch on YouTube](https://youtu.be/IjbBZS-Sz-A)
+**Demo Video:**  
+
+[![Watch the demo](https://img.youtube.com/vi/IjbBZS-Sz-A/0.jpg)](https://www.youtube.com/watch?v=IjbBZS-Sz-A)
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🎯 **Spatial Note Overlay** – Real-time guidance using Guitar Hero–style falling notes aligned with your real drums
-- 🧠 **AI Drum Kit Detection** – Automatically detects and classifies your drum parts using a Roboflow-trained model
-- ✋ **Hand & Gesture Tracking** – No controllers required. Uses hand tracking to detect hits
-- 👁️ **Passthrough View** – Practice while seeing your real drum kit via Meta's Passthrough Camera API
-- 🔊 **Audio Detection** – Detect and score your hit accuracy in real time
-- 🌐 **UnityWebRequest Integration** – Connects to cloud-hosted AI models for object detection
+- **Spatial Note Overlay** – Real-time guidance using Guitar Hero–style falling notes aligned with your real drums
+- **AI Drum Kit Detection** – Automatically detects and classifies your drum parts using a Roboflow-trained model
+- **Hand & Gesture Tracking** – No controllers required. Uses hand tracking to detect hits
+- **Passthrough View** – Practice while seeing your real drum kit via Meta's Passthrough Camera API
+- **Audio Detection** – Detect and score your hit accuracy in real time
+- **UnityWebRequest Integration** – Connects to cloud-hosted AI models for object detection
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Component               | Version / Tool                                                         |
 | ----------------------- | ---------------------------------------------------------------------- |
@@ -33,7 +32,7 @@
 
 ---
 
-## 🧪 Setup Instructions
+## Setup Instructions
 
 1. Clone this repository:
 
@@ -53,7 +52,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 DrumXR/
@@ -69,10 +68,10 @@ DrumXR/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📧 Contact
+## Contact
 
 For any questions or feedback, please reach out to [daniel.oquelis@gmail.com](mailto:daniel.oquelis@gmail.com).
